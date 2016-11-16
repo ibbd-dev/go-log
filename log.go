@@ -74,6 +74,31 @@ func (l *Logger) Output(s string) error {
 	return err
 }
 
+// 缓存
+func (l *Logger) Cache(s string) {
+	now := time.Now() // get this early.
+
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	//l.buf = l.buf[:0]
+	l.formatHeader(&l.buf, now)
+	l.buf = append(l.buf, s...)
+	if len(s) == 0 || s[len(s)-1] != '\n' {
+		l.buf = append(l.buf, '\n')
+	}
+}
+
+// 将缓存持久化
+func (l *Logger) Flush() error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	_, err := l.out.Write(l.buf)
+	l.buf = l.buf[:0]
+	return err
+}
+
 // Printf calls l.Output to print to the logger.
 // Arguments are handled in the manner of fmt.Printf.
 func (l *Logger) Printf(format string, v ...interface{}) {
