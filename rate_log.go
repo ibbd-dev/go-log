@@ -61,15 +61,12 @@ func (l *RateLogger) SetDuration(duration time.Duration) {
 }
 
 // Printf calls l.Output to print to the logger.
-// Arguments are handled in the manner of fmt.Printf.
 func (l *RateLogger) Printf(format string, v ...interface{}) {
 	l.Output(fmt.Sprintf(format, v...))
 }
 
 // Print calls l.Output to print to the logger.
-// Arguments are handled in the manner of fmt.Print.
 func (l *RateLogger) Print(v ...interface{}) { l.Output(fmt.Sprint(v...)) }
 
 // Println calls l.Output to print to the logger.
-// Arguments are handled in the manner of fmt.Println.
 func (l *RateLogger) Println(v ...interface{}) { l.Output(fmt.Sprintln(v...)) }

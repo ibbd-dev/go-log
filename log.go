@@ -81,7 +81,6 @@ func (l *Logger) Cache(s string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	//l.buf = l.buf[:0]
 	l.formatHeader(&l.buf, now)
 	l.buf = append(l.buf, s...)
 	if len(s) == 0 || s[len(s)-1] != '\n' {
@@ -100,17 +99,14 @@ func (l *Logger) Flush() error {
 }
 
 // Printf calls l.Output to print to the logger.
-// Arguments are handled in the manner of fmt.Printf.
 func (l *Logger) Printf(format string, v ...interface{}) {
 	l.Output(fmt.Sprintf(format, v...))
 }
 
 // Print calls l.Output to print to the logger.
-// Arguments are handled in the manner of fmt.Print.
 func (l *Logger) Print(v ...interface{}) { l.Output(fmt.Sprint(v...)) }
 
 // Println calls l.Output to print to the logger.
-// Arguments are handled in the manner of fmt.Println.
 func (l *Logger) Println(v ...interface{}) { l.Output(fmt.Sprintln(v...)) }
 
 // SetFlags sets the output flags for the logger.

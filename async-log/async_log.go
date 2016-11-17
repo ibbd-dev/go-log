@@ -22,12 +22,12 @@ const (
 )
 
 const (
-	// 换行符
-	newlineStr  = "\n"
-	newlineChar = '\n'
+// 换行符
+//newlineStr  = "\n"
+//newlineChar = '\n'
 
-	// 缓存切片的初始容量
-	cacheInitCap = 64
+// 缓存切片的初始容量
+//cacheInitCap = 64
 )
 
 type AsyncLogger struct {
@@ -123,7 +123,6 @@ func (l *AsyncLogger) SetDuration(duration time.Duration) {
 }
 
 // Printf calls l.Output to print to the logger.
-// Arguments are handled in the manner of fmt.Printf.
 func (l *AsyncLogger) Printf(format string, v ...interface{}) {
 	if l.probability < 1.0 && rand.Float32() > l.probability {
 		return
@@ -132,7 +131,6 @@ func (l *AsyncLogger) Printf(format string, v ...interface{}) {
 }
 
 // Print calls l.Output to print to the logger.
-// Arguments are handled in the manner of fmt.Print.
 func (l *AsyncLogger) Print(v ...interface{}) {
 	if l.probability < 1.0 && rand.Float32() > l.probability {
 		return
@@ -141,7 +139,6 @@ func (l *AsyncLogger) Print(v ...interface{}) {
 }
 
 // Println calls l.Output to print to the logger.
-// Arguments are handled in the manner of fmt.Println.
 func (l *AsyncLogger) Println(v ...interface{}) {
 	if l.probability < 1.0 && rand.Float32() > l.probability {
 		return

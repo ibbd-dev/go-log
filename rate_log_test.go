@@ -19,7 +19,7 @@ func TestLog(t *testing.T) {
 
 	logger := NewRateLogger(file, "", time.RFC3339)
 	logger.SetDuration(time.Millisecond * 100)
-	logger.SetPrefix(time.RFC822)
+	logger.SetPrefix("=====")
 	logger.Println("hello world")
 	logger.Println("hello world2")
 	time.Sleep(time.Millisecond * 105)
