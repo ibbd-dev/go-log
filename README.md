@@ -87,8 +87,8 @@ package main
 import (
 	"time"
 
-	"github.com/ibbd-dev/go-log/async-log"
 	"github.com/ibbd-dev/go-rotate-file"
+	"github.com/ibbd-dev/go-log/async-log"
 )
 
 func main() {
@@ -128,8 +128,8 @@ package main
 import (
 	"time"
 
-	"github.com/ibbd-dev/go-log/async-log"
 	"github.com/ibbd-dev/go-rotate-file"
+	"github.com/ibbd-dev/go-log/async-log"
 	"github.com/ibbd-dev/go-log/error-log"
 )
 
