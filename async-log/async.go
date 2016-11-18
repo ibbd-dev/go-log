@@ -1,7 +1,6 @@
 package asyncLog
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
@@ -21,14 +20,16 @@ const (
 	statusDone                    // 同步已经完成
 )
 
+const (
+	// 默认的异步写入周期
+	defaultDuration = time.Millisecond * 100
+)
+
 type AsyncLogger struct {
 	log.Logger
 
 	// 日志写入概率
 	probability float32
-
-	// 缓存配置
-	useCache bool // 是否使用缓存
 
 	// 同步配置
 	syncMu    sync.Mutex    // 保护下面两个属性
@@ -69,7 +70,7 @@ func init() {
 	}()
 }
 
-// New
+// New 获取日志对象
 // key 日志对象的唯一标识
 func New(out io.Writer, prefix string, flag string, key string) *AsyncLogger {
 	asyncLogQueue.Lock()
@@ -81,9 +82,8 @@ func New(out io.Writer, prefix string, flag string, key string) *AsyncLogger {
 
 	l := &AsyncLogger{
 		Logger:      log.Logger{},
-		probability: 1.1,
-		useCache:    true,
-		duration:    time.Second,
+		probability: 1.1, // 默认全部写入
+		duration:    defaultDuration,
 	}
 	l.Logger.SetOutput(out)
 	l.Logger.SetPrefix(prefix)
@@ -92,29 +92,13 @@ func New(out io.Writer, prefix string, flag string, key string) *AsyncLogger {
 	return l
 }
 
-// directOutput 内部
-func (l *AsyncLogger) directOutput(s string) error {
-	if l.useCache {
-		l.Cache(s)
-		return nil
-	}
-	return l.Logger.Output(s)
-}
-
 func (l *AsyncLogger) Output(s string) error {
 	if l.probability < 1.0 && rand.Float32() > l.probability {
 		return nil
 	}
 
-	if l.useCache {
-		l.Cache(s)
-		return nil
-	}
-	return l.Logger.Output(s)
-}
-
-func (l *AsyncLogger) SetUseCache(useCache bool) {
-	l.useCache = useCache
+	l.Cache(s)
+	return nil
 }
 
 func (l *AsyncLogger) SetProbability(probability float32) {
@@ -127,38 +111,26 @@ func (l *AsyncLogger) SetDuration(duration time.Duration) {
 	l.duration = duration
 }
 
-// Printf calls l.directOutput to print to the logger.
+// Printf calls l.Cache to print to the logger.
 func (l *AsyncLogger) Printf(format string, v ...interface{}) {
 	if l.probability < 1.0 && rand.Float32() > l.probability {
 		return
 	}
-	l.directOutput(fmt.Sprintf(format, v...))
+	l.Cache(fmt.Sprintf(format, v...))
 }
 
-// Print calls l.directOutput to print to the logger.
+// Print calls l.Cache to print to the logger.
 func (l *AsyncLogger) Print(v ...interface{}) {
 	if l.probability < 1.0 && rand.Float32() > l.probability {
 		return
 	}
-	l.directOutput(fmt.Sprint(v...))
+	l.Cache(fmt.Sprint(v...))
 }
 
-// Println calls l.directOutput to print to the logger.
+// Println calls l.Cache to print to the logger.
 func (l *AsyncLogger) Println(v ...interface{}) {
 	if l.probability < 1.0 && rand.Float32() > l.probability {
 		return
 	}
-	l.directOutput(fmt.Sprintln(v...))
-}
-
-func (l *AsyncLogger) PrintlnJson(data interface{}) {
-	if l.probability < 1.0 && rand.Float32() > l.probability {
-		return
-	}
-
-	bts, err := json.Marshal(data)
-	if err != nil {
-		// TODO
-	}
-	l.directOutput(string(bts))
+	l.Cache(fmt.Sprintln(v...))
 }

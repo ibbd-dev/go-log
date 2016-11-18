@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+const (
+	NoFlag   = ""
+	NoPrefix = ""
+)
+
 //
 type ILogger interface {
 	Output(string) error
