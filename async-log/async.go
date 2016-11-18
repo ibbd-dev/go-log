@@ -21,15 +21,6 @@ const (
 	statusDone                    // 同步已经完成
 )
 
-const (
-// 换行符
-//newlineStr  = "\n"
-//newlineChar = '\n'
-
-// 缓存切片的初始容量
-//cacheInitCap = 64
-)
-
 type AsyncLogger struct {
 	log.Logger
 
@@ -78,33 +69,47 @@ func init() {
 	}()
 }
 
-func New(out io.Writer, prefix string, flag string, filename string) *AsyncLogger {
+// New
+// key 日志对象的唯一标识
+func New(out io.Writer, prefix string, flag string, key string) *AsyncLogger {
 	asyncLogQueue.Lock()
 	defer asyncLogQueue.Unlock()
 
-	if lf, ok := asyncLogQueue.logs[filename]; ok {
-		return lf
+	if l, ok := asyncLogQueue.logs[key]; ok {
+		return l
 	}
 
-	lf := &AsyncLogger{
+	l := &AsyncLogger{
 		Logger:      log.Logger{},
 		probability: 1.1,
 		useCache:    true,
 		duration:    time.Second,
 	}
-	lf.Logger.SetOutput(out)
-	lf.Logger.SetPrefix(prefix)
-	lf.Logger.SetFlags(flag)
-	asyncLogQueue.logs[filename] = lf
-	return lf
+	l.Logger.SetOutput(out)
+	l.Logger.SetPrefix(prefix)
+	l.Logger.SetFlags(flag)
+	asyncLogQueue.logs[key] = l
+	return l
 }
 
-func (l *AsyncLogger) Output(s string) error {
+// directOutput 内部
+func (l *AsyncLogger) directOutput(s string) error {
 	if l.useCache {
 		l.Cache(s)
 		return nil
 	}
+	return l.Logger.Output(s)
+}
 
+func (l *AsyncLogger) Output(s string) error {
+	if l.probability < 1.0 && rand.Float32() > l.probability {
+		return nil
+	}
+
+	if l.useCache {
+		l.Cache(s)
+		return nil
+	}
 	return l.Logger.Output(s)
 }
 
@@ -122,28 +127,28 @@ func (l *AsyncLogger) SetDuration(duration time.Duration) {
 	l.duration = duration
 }
 
-// Printf calls l.Output to print to the logger.
+// Printf calls l.directOutput to print to the logger.
 func (l *AsyncLogger) Printf(format string, v ...interface{}) {
 	if l.probability < 1.0 && rand.Float32() > l.probability {
 		return
 	}
-	l.Output(fmt.Sprintf(format, v...))
+	l.directOutput(fmt.Sprintf(format, v...))
 }
 
-// Print calls l.Output to print to the logger.
+// Print calls l.directOutput to print to the logger.
 func (l *AsyncLogger) Print(v ...interface{}) {
 	if l.probability < 1.0 && rand.Float32() > l.probability {
 		return
 	}
-	l.Output(fmt.Sprint(v...))
+	l.directOutput(fmt.Sprint(v...))
 }
 
-// Println calls l.Output to print to the logger.
+// Println calls l.directOutput to print to the logger.
 func (l *AsyncLogger) Println(v ...interface{}) {
 	if l.probability < 1.0 && rand.Float32() > l.probability {
 		return
 	}
-	l.Output(fmt.Sprintln(v...))
+	l.directOutput(fmt.Sprintln(v...))
 }
 
 func (l *AsyncLogger) PrintlnJson(data interface{}) {
@@ -155,5 +160,5 @@ func (l *AsyncLogger) PrintlnJson(data interface{}) {
 	if err != nil {
 		// TODO
 	}
-	l.Output(string(bts))
+	l.directOutput(string(bts))
 }
