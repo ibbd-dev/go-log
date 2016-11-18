@@ -8,6 +8,7 @@
 # log基本操作，并实现按时间周期写入log
 # 按时间周期写入，保证一个周期内，只会写入一次。
 # 对于很多写log的情况，我们都需要控制一定的输出频率，避免log文件被写爆掉。
+# 接口类似官方的log包
 go get -u github.com/ibbd-dev/go-log
 
 # 异步写log, 支持写入概率，例如以30%的概率写日志
@@ -15,6 +16,8 @@ go get -u github.com/ibbd-dev/go-log
 go get -u github.com/ibbd-dev/go-log/async-log
 
 # 错误日志，支持错误等级
+# 该项目可以自由和上面两个项目的log.Logger，asyncLog.AsyncLogger进行组合
+# 也可以和官方的log包进行组合
 go get -u github.com/ibbd-dev/go-log/error-log
 ```
 
