@@ -121,7 +121,7 @@ logger.SetProbability(0.1)
 
 ### 错误日志
 
-对于提供`Debug`, `Info`, `Warn`, `Error`, `Fatal`等接口，方便错误日志的写入。
+对于提供`Debug`, `Info`, `Warn`, `Error`, `Fatal`等接口（对应的格式化接口有`Debugf`, `Infof`, `Warnf`, `Errorf`, `Fatalf`等，提供格式化的功能），方便错误日志的写入。
 
 该项目可以方便的和其他日志对象的项目进行组合使用，例如和`asyncLog`组合使用可以实现按概率写入，或者批量异步写入，也可以和`ibbd-dev/go-log` 结合使用，或者和官方的`log`结合使用等。
 
@@ -150,7 +150,7 @@ func main() {
 	errorLog.Info(13, "Info", 1.023)
 	errorLog.Warn(14, "Warn", 1.023)
 	errorLog.Error(15, "Error", 1.023)
-	errorLog.Fatal(16, "Fatal", 1.023)
+	errorLog.Fatalf("id=%d, type=%s, price=%f", 16, "Fatal", 1.023)
 
 	time.Sleep(time.Second)
 }

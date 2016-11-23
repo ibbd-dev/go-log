@@ -79,6 +79,23 @@ func (l *Logger) Output(s string) error {
 	return err
 }
 
+// OutputBytes 避免先需要转成字符串
+func (l *Logger) OutputBytes(s []byte) error {
+	now := time.Now() // get this early.
+
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	l.buf = l.buf[:0]
+	l.formatHeader(&l.buf, now)
+	l.buf = append(l.buf, s...)
+	if len(s) == 0 || s[len(s)-1] != '\n' {
+		l.buf = append(l.buf, '\n')
+	}
+	_, err := l.out.Write(l.buf)
+	return err
+}
+
 // 缓存
 func (l *Logger) Cache(s string) {
 	now := time.Now() // get this early.

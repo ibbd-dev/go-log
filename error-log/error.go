@@ -49,15 +49,24 @@ func New(logger ILogger, level Priority) *ErrorLogger {
 	}
 }
 
+// SetLevel 设置错误输出等级
 func (l *ErrorLogger) SetLevel(level Priority) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.level = level
 }
 
+// 直接输出日志
 func (l *ErrorLogger) directOutput(level Priority, v ...interface{}) {
 	if level >= l.level {
 		l.logger.Output(levelTitle[level] + " " + fmt.Sprintln(v...))
+	}
+}
+
+// 格式化输出日志
+func (l *ErrorLogger) directOutputf(level Priority, format string, v ...interface{}) {
+	if level >= l.level {
+		l.logger.Output(levelTitle[level] + " " + fmt.Sprintf(format, v...))
 	}
 }
 
@@ -80,4 +89,27 @@ func (l *ErrorLogger) Error(v ...interface{}) {
 // 这个级别的错误都要写日志
 func (l *ErrorLogger) Fatal(v ...interface{}) {
 	l.directOutput(LevelFatal, v...)
+}
+
+//*********** 以下是带格式化的输出 ****************
+
+func (l *ErrorLogger) Debugf(format string, v ...interface{}) {
+	l.directOutputf(LevelDebug, format, v...)
+}
+
+func (l *ErrorLogger) Infof(format string, v ...interface{}) {
+	l.directOutputf(LevelInfo, format, v...)
+}
+
+func (l *ErrorLogger) Warnf(format string, v ...interface{}) {
+	l.directOutputf(LevelWarn, format, v...)
+}
+
+func (l *ErrorLogger) Errorf(format string, v ...interface{}) {
+	l.directOutputf(LevelError, format, v...)
+}
+
+// 这个级别的错误都要写日志
+func (l *ErrorLogger) Fatalf(format string, v ...interface{}) {
+	l.directOutputf(LevelFatal, format, v...)
 }

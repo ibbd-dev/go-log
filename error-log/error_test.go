@@ -39,11 +39,11 @@ func TestErrorLog2(t *testing.T) {
 	logger.SetDuration(time.Millisecond * 100)
 
 	errorLog := New(logger, LevelWarn)
-	errorLog.Debug(12, "Debug", 1.023)
-	errorLog.Info(13, "Info", 1.023)
-	errorLog.Warn(14, "Warn", 1.023)
-	errorLog.Error(15, "Error", 1.023)
-	errorLog.Fatal(16, "Fatal", 1.023)
+	errorLog.Debugf("id=%d, level=%s, price=%f", 12, "Debug", 1.023)
+	errorLog.Infof("id=%d, level=%s, price=%f", 13, "Info", 1.023)
+	errorLog.Warnf("id=%d, level=%s, price=%f", 14, "Warn", 1.023)
+	errorLog.Errorf("id=%d, level=%s, price=%f", 15, "Error", 1.023)
+	errorLog.Fatalf("id=%d, level=%s, price=%f", 16, "Fatal", 1.023)
 
 	time.Sleep(time.Second)
 }
