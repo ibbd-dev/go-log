@@ -110,6 +110,20 @@ func (l *Logger) Cache(s string) {
 	}
 }
 
+// 缓存
+func (l *Logger) CacheBytes(s []byte) {
+	now := time.Now() // get this early.
+
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	l.formatHeader(&l.buf, now)
+	l.buf = append(l.buf, s...)
+	if len(s) == 0 || s[len(s)-1] != '\n' {
+		l.buf = append(l.buf, '\n')
+	}
+}
+
 // 将缓存持久化
 func (l *Logger) Flush() error {
 	l.mu.Lock()

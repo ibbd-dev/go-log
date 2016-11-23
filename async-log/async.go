@@ -101,6 +101,15 @@ func (l *AsyncLogger) Output(s string) error {
 	return nil
 }
 
+func (l *AsyncLogger) OutputBytes(s []byte) error {
+	if l.probability < 1.0 && rand.Float32() > l.probability {
+		return nil
+	}
+
+	l.CacheBytes(s)
+	return nil
+}
+
 func (l *AsyncLogger) SetProbability(probability float32) {
 	l.probability = probability
 }
