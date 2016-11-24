@@ -44,3 +44,20 @@ func TestLog2(t *testing.T) {
 	time.Sleep(time.Millisecond * 10)
 	logger.Println("hello world4")
 }
+
+func TestProtectKey(t *testing.T) {
+	fileFlag := os.O_WRONLY | os.O_CREATE | os.O_APPEND
+	file, err := os.OpenFile("/tmp/test-protect.log", fileFlag, 0666)
+	defer file.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	AddProtectKey("protect")
+	_ = New(file, "", time.RFC3339, "protect")
+	if _, ok := asyncLogQueue.logs["_protect"]; !ok {
+		t.Fatalf("Error protect key")
+	}
+
+	//_ = New(file, "", time.RFC3339, "_protect")
+}

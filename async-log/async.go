@@ -42,6 +42,11 @@ type tAsyncLogQueue struct {
 	// 下标是文件名
 	logs map[string]*AsyncLogger
 
+	// 需要保护的key值
+	// 在使用的时候，可以允许调用接口设置一次
+	// 设置完之后，如果外部使用了相同的key，则会报错
+	protectKeys map[string]bool
+
 	sync.RWMutex
 }
 
@@ -49,7 +54,8 @@ var asyncLogQueue *tAsyncLogQueue
 
 func init() {
 	asyncLogQueue = &tAsyncLogQueue{
-		logs: make(map[string]*AsyncLogger),
+		logs:        make(map[string]*AsyncLogger),
+		protectKeys: make(map[string]bool),
 	}
 
 	timer := time.NewTicker(time.Millisecond * 100)
@@ -70,11 +76,32 @@ func init() {
 	}()
 }
 
-// New 获取日志对象
-// key 日志对象的唯一标识
-func New(out io.Writer, prefix string, flag string, key string) *AsyncLogger {
+// AddProtectKey 增加一个保护的key
+func AddProtectKey(key string) {
 	asyncLogQueue.Lock()
 	defer asyncLogQueue.Unlock()
+
+	if _, ok := asyncLogQueue.protectKeys[key]; !ok {
+		asyncLogQueue.protectKeys[key] = true
+	}
+}
+
+// New 获取日志对象
+// key 日志对象的唯一标识，如果需要设置为保护key，则需要先调用AddProtectKey方法
+func New(out io.Writer, prefix string, flag string, key string) *AsyncLogger {
+	if key[0] == '_' {
+		panic("Error key start with '_' NOT Allowed!")
+	}
+
+	var ok bool
+	asyncLogQueue.Lock()
+	defer asyncLogQueue.Unlock()
+
+	// 判断是否为受保护key
+	if _, ok = asyncLogQueue.protectKeys[key]; ok {
+		// 受保护key加上特殊的前缀
+		key = "_" + key
+	}
 
 	if l, ok := asyncLogQueue.logs[key]; ok {
 		return l
