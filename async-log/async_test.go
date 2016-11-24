@@ -18,7 +18,7 @@ func TestLog(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	logger := New(file, "", time.RFC3339, "test-async")
+	logger := New(file, "", time.RFC3339)
 	logger.SetDuration(time.Millisecond * 100)
 	logger.SetPrefix(time.RFC822)
 	logger.Println("hello world")
@@ -34,7 +34,7 @@ func TestLog2(t *testing.T) {
 	file := rotateFile.Open("/tmp/test-async2.log")
 	defer file.Close()
 
-	logger := New(file, "", time.RFC3339, "test-async2")
+	logger := New(file, "", time.RFC3339)
 	logger.SetDuration(time.Millisecond * 100)
 	logger.Println("hello world")
 	logger.Println("hello world2")
@@ -43,21 +43,4 @@ func TestLog2(t *testing.T) {
 	logger.Println("hello world3")
 	time.Sleep(time.Millisecond * 10)
 	logger.Println("hello world4")
-}
-
-func TestProtectKey(t *testing.T) {
-	fileFlag := os.O_WRONLY | os.O_CREATE | os.O_APPEND
-	file, err := os.OpenFile("/tmp/test-protect.log", fileFlag, 0666)
-	defer file.Close()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	AddProtectKey("protect")
-	_ = New(file, "", time.RFC3339, "protect")
-	if _, ok := asyncLogQueue.logs["_protect"]; !ok {
-		t.Fatalf("Error protect key")
-	}
-
-	//_ = New(file, "", time.RFC3339, "_protect")
 }
