@@ -28,16 +28,10 @@ func NewDurationLogger(out io.Writer, prefix string, flag string) *DurationLogge
 }
 
 func (l *DurationLogger) Output(s string) error {
-	now := time.Now() // get this early.
-	l.timeMu.Lock()
-	if l.lastTime.Add(l.duration).After(now) {
-		l.timeMu.Unlock()
-		return nil
+	if l.check() {
+		return l.Logger.Output(s)
 	}
-	l.lastTime = now
-	l.timeMu.Unlock()
-
-	return l.Logger.Output(s)
+	return nil
 }
 
 func (l *DurationLogger) SetDuration(duration time.Duration) {
@@ -48,11 +42,38 @@ func (l *DurationLogger) SetDuration(duration time.Duration) {
 
 // Printf calls l.Output to print to the logger.
 func (l *DurationLogger) Printf(format string, v ...interface{}) {
-	l.Output(fmt.Sprintf(format, v...))
+	if l.check() {
+		l.output(fmt.Sprintf(format, v...))
+	}
 }
 
 // Print calls l.Output to print to the logger.
-func (l *DurationLogger) Print(v ...interface{}) { l.Output(fmt.Sprint(v...)) }
+func (l *DurationLogger) Print(v ...interface{}) {
+	if l.check() {
+		l.output(fmt.Sprint(v...))
+	}
+}
 
 // Println calls l.Output to print to the logger.
-func (l *DurationLogger) Println(v ...interface{}) { l.Output(fmt.Sprintln(v...)) }
+func (l *DurationLogger) Println(v ...interface{}) {
+	if l.check() {
+		l.output(fmt.Sprintln(v...))
+	}
+}
+
+func (l *DurationLogger) output(s string) error {
+	return l.Logger.Output(s)
+}
+
+func (l *DurationLogger) check() bool {
+	now := time.Now()
+	l.timeMu.Lock()
+	if l.lastTime.Add(l.duration).After(now) {
+		l.timeMu.Unlock()
+		return false
+	}
+	l.lastTime = now
+	l.timeMu.Unlock()
+
+	return true
+}
